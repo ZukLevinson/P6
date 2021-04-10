@@ -2,6 +2,7 @@ import random
 import string
 import wikipedia
 import re
+from requests.exceptions import ConnectionError
 
 
 def get_random_wiki_pages(number_of_pages, minimum_words_count):
@@ -26,11 +27,15 @@ def get_random_wiki_pages(number_of_pages, minimum_words_count):
 
 def get_page_contents(title):
     try:
-        return wikipedia.page(title).content
+        return wikipedia.page(title, auto_suggest=True).content
     except wikipedia.DisambiguationError as e:
         new_title = random.choice(e.options)
+        print(new_title)
+        print(e.options)
 
-        return wikipedia.page(new_title).content
+        return get_page_contents(new_title)
+    except (wikipedia.PageError, ConnectionError) as e:
+        return get_page_contents(wikipedia.random())
 
 
 class WikiReader:
