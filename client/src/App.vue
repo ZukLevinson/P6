@@ -34,12 +34,56 @@ body {
 
   &[row] {
     flex-direction: row;
+
+    & > div {
+      &[lg-3] {
+        width: 25%;
+        flex: 3;
+      }
+
+      &[lg-4] {
+        width: 33.333%;
+        flex: 4;
+      }
+
+      &[lg-2] {
+        width: 12.667%;
+        flex: 2;
+      }
+
+      &[lg-1] {
+        width: 8.333%;
+        flex: 1;
+      }
+    }
   }
   &[col] {
     flex-direction: column;
+
+    & > div {
+      &[lg-3] {
+        height: 25%;
+        flex: 3;
+      }
+
+      &[lg-4] {
+        height: 33.333%;
+        flex: 4;
+      }
+
+      &[lg-2] {
+        height: 12.667%;
+        flex: 2;
+      }
+
+      &[lg-1] {
+        height: 8.333%;
+        flex: 1;
+      }
+    }
   }
 
-  & > * {
+  & > div {
     flex: 12 12 auto;
   }
 }
@@ -64,9 +108,8 @@ body {
   font-family: "Noto Sans JP", sans-serif;
 }
 
-[lg-3] {
-  width: 25%;
-  flex: 3;
+[ml-2] {
+  margin-left: 0.4em;
 }
 
 h1 {
