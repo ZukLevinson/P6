@@ -1,3 +1,4 @@
+import random
 import string
 import wikipedia
 import re
@@ -8,19 +9,28 @@ def get_random_wiki_pages(number_of_pages, minimum_words_count):
 
     if number_of_pages > 1:
         for title in titles:
-            page = wikipedia.page(title).content
+            page = get_page_contents(title)
 
             while len(page.split()) < minimum_words_count:
-                page = wikipedia.page(wikipedia.random()).content
+                page = get_page_contents(wikipedia.random())
 
             yield page
     else:
-        page = wikipedia.page(titles).content
+        page = get_page_contents(titles)
 
         while len(page.split()) < minimum_words_count:
-            page = wikipedia.page(wikipedia.random()).content
+            page = get_page_contents(wikipedia.random())
 
         yield page
+
+
+def get_page_contents(title):
+    try:
+        return wikipedia.page(title).content
+    except wikipedia.DisambiguationError as e:
+        new_title = random.choice(e.options)
+
+        return wikipedia.page(new_title).content
 
 
 class WikiReader:
@@ -41,7 +51,6 @@ class WikiReader:
             for i in range(num_of_words, len(page_tokens)):
                 sequence = page_tokens[i - num_of_words:i]
                 line = ' '.join(sequence)
-                print(line)
                 sentences.append(line)
 
         return sentences
