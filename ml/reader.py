@@ -45,6 +45,10 @@ class WikiReader:
         for page in get_random_wiki_pages(self.NUMBER_OF_PAGES, self.MINIMUM_WORD_COUNT):
             self.pages.append(format_content(page))
 
+    def generate_formatted_pages(self):
+        for page in get_random_wiki_pages(self.NUMBER_OF_PAGES, self.MINIMUM_WORD_COUNT):
+            yield format_content(page)
+
     def generate_sentences(self, num_of_words):
         sentences = []
 
@@ -55,6 +59,19 @@ class WikiReader:
                 sentences.append(line)
 
         return sentences
+
+    def create_page_generator(self, num_of_words, sequence_length):
+        for page_tokens in self.generate_formatted_pages():
+            for i in range(num_of_words, len(page_tokens)):
+                sequence = page_tokens[i - num_of_words:i]
+                line = ' '.join(sequence)
+
+                yield line
+                # sequences.append(line)
+                #
+                # if len(sequences) == sequence_length:
+                #     yield sequences
+                #     sequences = []
 
 
 def format_content(text):
