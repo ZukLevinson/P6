@@ -60,18 +60,15 @@ class WikiReader:
 
         return sentences
 
-    def create_page_generator(self, num_of_words, sequence_length):
+    def create_page_generator(self, num_of_words):
+        num_of_words += 1
+
         for page_tokens in self.generate_formatted_pages():
             for i in range(num_of_words, len(page_tokens)):
                 sequence = page_tokens[i - num_of_words:i]
                 line = ' '.join(sequence)
 
                 yield line
-                # sequences.append(line)
-                #
-                # if len(sequences) == sequence_length:
-                #     yield sequences
-                #     sequences = []
 
 
 def format_content(text):
