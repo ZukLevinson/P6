@@ -29,12 +29,8 @@ def get_page_contents(title):
     try:
         return wikipedia.page(title, auto_suggest=True).content
     except wikipedia.DisambiguationError as e:
-        new_title = random.choice(e.options)
-        print(new_title)
-        print(e.options)
-
-        return get_page_contents(new_title)
-    except (wikipedia.PageError, ConnectionError) as e:
+        return get_page_contents(random.choice(e.options))
+    except (wikipedia.PageError, ConnectionError, RecursionError):
         return get_page_contents(wikipedia.random())
 
 

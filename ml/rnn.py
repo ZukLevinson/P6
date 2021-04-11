@@ -18,14 +18,14 @@ def pre_process_lines(lines):
     return np.array(tokenizer.texts_to_sequences(lines)), tokenizer
 
 
-def predict_words(model, tokenizer, text_seq_length, seed_text, n_words):
+def predict_words(tf_model, tokenizer, text_seq_length, seed_text, n_words):
     text = []
 
     for _ in range(n_words):
         encoded = tokenizer.texts_to_sequences([seed_text])[0]
         encoded = pad_sequences([encoded], maxlen=text_seq_length, truncating='pre')
 
-        y_predict = model.predict_classes(encoded)
+        y_predict = np.argmax(tf_model.predict(encoded), axis=-1)
 
         predicted_word = ''
         for word, index in tokenizer.word_index.items():
@@ -38,11 +38,11 @@ def predict_words(model, tokenizer, text_seq_length, seed_text, n_words):
 
 
 if __name__ == "__main__":
-    reader = WikiReader(100, pages=100)
+    reader = WikiReader(100, pages=200)
     reader.get_and_reformat_all_pages()
-    lines = reader.generate_sentences(20)
+    generated_lines = reader.generate_sentences(20)
 
-    sequences, seq_tokenizer = pre_process_lines(lines)
+    sequences, seq_tokenizer = pre_process_lines(generated_lines)
 
     VOCABULARY_SIZE = len(seq_tokenizer.word_index) + 1
     x, y = sequences[:, :-1], sequences[:, -1]
@@ -69,8 +69,9 @@ if __name__ == "__main__":
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.fit(x, y, epochs=100, batch_size=256)
+    model.save_weights('my_model_weights.h5')  # to store
 
-    basis_text = lines[0][:, :-1]
+    basis_text = "hammer is a tool"
     print(basis_text)
     print('\n')
     print(predict_words(model, seq_tokenizer, 20, basis_text, 10))
