@@ -84,7 +84,7 @@ def get_lines_separated(tokens, sentence_length=20):
         yield [sentence, target]
 
 
-if __name__ == "__main__":
+def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
     writer = CSVWriter()
 
     folder_name = writer.create_folder()
@@ -92,15 +92,11 @@ if __name__ == "__main__":
 
     reader = WikiReader(min_words_per_page=300)
 
-    SET_LENGTH = 20
-    MAX_ROWS = 10000
-    MAX_FOLDERS = 1000
-
     file_name = f"{folder_name}/{csv_name}.csv"
 
-    for page_tokens in reader.get_and_reformat_pages(200):
-        if writer.count_rows(file_name) > MAX_ROWS:
-            if writer.count_csvs_in_folder(folder_name) > MAX_FOLDERS:
+    for page_tokens in reader.get_and_reformat_pages(set_length):
+        if writer.count_rows(file_name) > max_rows:
+            if writer.count_csvs_in_folder(folder_name) > max_folders:
                 folder_name = writer.create_folder()
 
             csv_name = writer.create_csv_file(folder_name)
@@ -108,3 +104,7 @@ if __name__ == "__main__":
             file_name = f"{folder_name}/{csv_name}.csv"
 
         writer.add_rows(file_name, [row for row in get_lines_separated(page_tokens)])
+
+
+if __name__ == "__main__":
+    generate_sets(200)

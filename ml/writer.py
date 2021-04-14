@@ -49,12 +49,12 @@ class CSVWriter:
         return new_csv_name
 
     def add_rows(self, path, rows):
-        with io.open(f"{self.MAIN_FOLDER}/{path}", "w+", encoding="utf-8") as file:
+        with io.open(f"{self.MAIN_FOLDER}/{path}", "a", encoding="utf-8") as file:
             writer = csv.writer(file)
             writer.writerows(rows)
 
     def count_rows(self, path):
-        with io.open(f"{self.MAIN_FOLDER}/{path}", "w+", encoding="utf-8") as file:
+        with io.open(f"{self.MAIN_FOLDER}/{path}", "r", encoding="utf-8") as file:
             writer = csv.reader(file)
             return len(list(writer))
 
