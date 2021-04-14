@@ -8,21 +8,16 @@ from requests.exceptions import ConnectionError
 def get_random_wiki_pages(number_of_pages, minimum_words_count):
     titles = wikipedia.random(number_of_pages)
 
-    if number_of_pages > 1:
-        for title in titles:
-            page = get_page_contents(title)
+    if not isinstance(titles, list):
+        titles = [titles]
 
-            while len(page.split()) < minimum_words_count:
-                page = get_page_contents(wikipedia.random())
+    for title in titles:
+        page = get_page_contents(title)
 
-            yield page
-    else:
-        page = get_page_contents(titles)
+        while len(get_page_contents(title).split()) < minimum_words_count:
+            title = wikipedia.random()
 
-        while len(page.split()) < minimum_words_count:
-            page = get_page_contents(wikipedia.random())
-
-        yield page
+        yield title, page
 
 
 def get_page_contents(title):
@@ -36,39 +31,14 @@ def get_page_contents(title):
 
 class WikiReader:
     def __init__(self, min_words, **kwargs):
-        self.NUMBER_OF_PAGES = 1 if kwargs.get('pages') is None else kwargs.get('pages')
         self.MINIMUM_WORD_COUNT = min_words
 
-        self.pages = []
+        self.page_names = []
 
-    def get_and_reformat_all_pages(self):
-        for page in get_random_wiki_pages(self.NUMBER_OF_PAGES, self.MINIMUM_WORD_COUNT):
-            self.pages.append(format_content(page))
-
-    def generate_formatted_pages(self):
-        for page in get_random_wiki_pages(self.NUMBER_OF_PAGES, self.MINIMUM_WORD_COUNT):
+    def get_and_reformat_pages(self, number_of_pages=3):
+        for title, page in get_random_wiki_pages(number_of_pages, self.MINIMUM_WORD_COUNT):
+            self.page_names.append(title)  # TODO: add title check to disable page duplication
             yield format_content(page)
-
-    def generate_sentences(self, num_of_words):
-        sentences = []
-
-        for page_tokens in self.pages:
-            for i in range(num_of_words, len(page_tokens)):
-                sequence = page_tokens[i - num_of_words:i]
-                line = ' '.join(sequence)
-                sentences.append(line)
-
-        return sentences
-
-    def create_page_generator(self, num_of_words):
-        num_of_words += 1
-
-        for page_tokens in self.generate_formatted_pages():
-            for i in range(num_of_words, len(page_tokens)):
-                sequence = page_tokens[i - num_of_words:i]
-                line = ' '.join(sequence)
-
-                yield line
 
 
 def format_content(text):

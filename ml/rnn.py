@@ -30,7 +30,7 @@ class WordPredictor(Sequential):
 
     def train_on_wiki(self, num_of_sets=300, min_words_in_set=100):
         wiki_reader = WikiReader(min_words_in_set, pages=num_of_sets)
-        wiki_set_generator = wiki_reader.create_page_generator(self.NUMBER_OF_WORDS)
+        wiki_set_generator = wiki_reader.sentences_generator(self.NUMBER_OF_WORDS)
 
         self.fit(create_pre_process_generator(wiki_set_generator, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
                  steps_per_epoch=256)
