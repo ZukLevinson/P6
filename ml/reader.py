@@ -30,8 +30,8 @@ def get_page_contents(title):
 
 
 class WikiReader:
-    def __init__(self, min_words, **kwargs):
-        self.MINIMUM_WORD_COUNT = min_words
+    def __init__(self, min_words_per_page, **kwargs):
+        self.MINIMUM_WORD_COUNT = min_words_per_page
 
         self.page_names = []
 

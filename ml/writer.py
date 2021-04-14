@@ -1,6 +1,7 @@
 import os
 import csv
 import re
+import io
 
 
 class CSVWriter:
@@ -22,7 +23,7 @@ class CSVWriter:
             new_id = int(last_name.split("_")[-1]) + 1
 
         new_dir_name = self.folder_format(new_id)
-        print(os.mkdir(f"{self.MAIN_FOLDER}/{new_dir_name}"))
+        os.mkdir(f"{self.MAIN_FOLDER}/{new_dir_name}")
 
         return new_dir_name
 
@@ -47,7 +48,15 @@ class CSVWriter:
 
         return new_csv_name
 
-    def add_row(self, path, sentence, target):
-        with open(f"{self.MAIN_FOLDER}/{path}") as file:
+    def add_rows(self, path, rows):
+        with io.open(f"{self.MAIN_FOLDER}/{path}", "w+", encoding="utf-8") as file:
             writer = csv.writer(file)
-            writer.writerow([sentence, target])
+            writer.writerows(rows)
+
+    def count_rows(self, path):
+        with io.open(f"{self.MAIN_FOLDER}/{path}", "w+", encoding="utf-8") as file:
+            writer = csv.reader(file)
+            return len(list(writer))
+
+    def count_csvs_in_folder(self, path):
+        return len(os.listdir(f"{self.MAIN_FOLDER}/{path}"))

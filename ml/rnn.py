@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 from reader import WikiReader
+from writer import CSVWriter
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Embedding
@@ -21,6 +22,7 @@ class WordPredictor(Sequential):
 
         self.tokenizer = Tokenizer()
 
+        # NETWORK
         self.add(Embedding(input_dim=self.VOCABULARY_SIZE, output_dim=50, input_length=self.NUMBER_OF_WORDS))
         self.add(LSTM(256, return_sequences=True))
         self.add(Dropout(0.2))
@@ -28,12 +30,12 @@ class WordPredictor(Sequential):
         self.add(Dropout(0.2))
         self.add(Dense(self.VOCABULARY_SIZE, activation='softmax'))
 
-    def train_on_wiki(self, num_of_sets=300, min_words_in_set=100):
-        wiki_reader = WikiReader(min_words_in_set, pages=num_of_sets)
-        wiki_set_generator = wiki_reader.sentences_generator(self.NUMBER_OF_WORDS)
-
-        self.fit(create_pre_process_generator(wiki_set_generator, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
-                 steps_per_epoch=256)
+    # def train_on_wiki(self, min_words_in_set=100):
+    #     wiki_reader = WikiReader(min_words_in_set)
+    #     wiki_set_generator = wiki_reader.get_and_reformat_pages
+    #
+    #     self.fit(create_pre_process_generator(wiki_set_generator, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
+    #              steps_per_epoch=256)
 
 
 def create_pre_process_generator(generator, tokenizer, vocab_size):
@@ -72,7 +74,37 @@ def predict_words(tf_model, tokenizer, text_seq_length, seed_text, n_words):
     return ' '.join(text)
 
 
+def get_lines_separated(tokens, sentence_length=20):
+    for index in range(sentence_length, len(tokens)):
+        sequence = tokens[index - sentence_length:index]
+
+        sentence = ' '.join(sequence[:sentence_length - 1])
+        target = sequence[sentence_length - 1]
+
+        yield [sentence, target]
+
+
 if __name__ == "__main__":
-    model = WordPredictor(19)
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.train_on_wiki()
+    writer = CSVWriter()
+
+    folder_name = writer.create_folder()
+    csv_name = writer.create_csv_file(folder_name)
+
+    reader = WikiReader(min_words_per_page=300)
+
+    SET_LENGTH = 20
+    MAX_ROWS = 10000
+    MAX_FOLDERS = 1000
+
+    file_name = f"{folder_name}/{csv_name}.csv"
+
+    for page_tokens in reader.get_and_reformat_pages(200):
+        if writer.count_rows(file_name) > MAX_ROWS:
+            if writer.count_csvs_in_folder(folder_name) > MAX_FOLDERS:
+                folder_name = writer.create_folder()
+
+            csv_name = writer.create_csv_file(folder_name)
+
+            file_name = f"{folder_name}/{csv_name}.csv"
+
+        writer.add_rows(file_name, [row for row in get_lines_separated(page_tokens)])
