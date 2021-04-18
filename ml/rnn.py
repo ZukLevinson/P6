@@ -83,7 +83,7 @@ def get_lines_separated(tokens, sentence_length=20):
         yield [sentence, target]
 
 
-def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
+def generate_sets(set_length=200, max_rows=10000, max_folders=1000):
     writer = CSVWriter()
 
     folder_name = writer.create_folder()
@@ -106,5 +106,9 @@ def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
 
 
 if __name__ == "__main__":
-    rnn = WordPredictor(20)
-    rnn.train_on_wiki()
+    # # Run RNN
+    # rnn = WordPredictor(20)
+    # rnn.train_on_wiki()
+
+    # Generate new sets
+    generate_sets()
