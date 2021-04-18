@@ -1,8 +1,9 @@
 import tensorflow as tf
 import numpy as np
 
-from wiki_reader import WikiReader
+from wiki_reader import WikiReader, format_content
 from csv_writer import CSVWriter
+from file_reader import FileReader
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Embedding
@@ -18,7 +19,7 @@ class WordPredictor(Sequential):
         super(WordPredictor, self).__init__()
 
         self.NUMBER_OF_WORDS = num_of_words
-        self.VOCABULARY_SIZE = 6000
+        self.VOCABULARY_SIZE = 50000
 
         self.tokenizer = Tokenizer()
 
@@ -30,18 +31,25 @@ class WordPredictor(Sequential):
         self.add(Dropout(0.2))
         self.add(Dense(self.VOCABULARY_SIZE, activation='softmax'))
 
-    # def train_on_wiki(self):
-    #     self.fit(create_pre_process_generator(wiki_set_generator, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
-    #              steps_per_epoch=256)
+        self.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    def train_on_wiki(self):
+        self.fit(create_pre_process_generator(256, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
+                 steps_per_epoch=256)
 
 
-def create_pre_process_generator(wiki_sets, tokenizer, vocab_size):
-    for wiki_set in wiki_sets:
-        tokenizer.fit_on_texts([wiki_set])
-        sequence = np.array(tokenizer.texts_to_sequences([wiki_set]))
+def create_pre_process_generator(num_of_sets, tokenizer, vocab_size, line_count=2000):
+    reader = FileReader()
 
-        x, y = sequence[:, :-1], sequence[:, -1]
-        y = to_categorical(y, vocab_size)
+    for i in range(num_of_sets):
+        wiki_set = [' '.join(line) for line in reader.read_random_lines(line_count)]
+        tokenizer.fit_on_texts([format_content(line) for line in wiki_set])
+        sequence = np.array([token_list for token_list in tokenizer.texts_to_sequences([line for line in wiki_set]) if
+                             len(token_list) == 20])
+
+        # x, y = sequence[:, :-1], sequence[:, -1]
+        x, y = np.asarray([line[:-1] for line in sequence], dtype=np.int32), [line[-1] for line in sequence]
+        y = to_categorical(y, num_classes=vocab_size)
 
         yield x, y
 
@@ -98,4 +106,5 @@ def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
 
 
 if __name__ == "__main__":
-    generate_sets(300)
+    rnn = WordPredictor(20)
+    rnn.train_on_wiki()

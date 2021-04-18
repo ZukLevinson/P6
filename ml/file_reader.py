@@ -5,8 +5,8 @@ import io
 
 
 class FileReader:
-    def __init__(self):
-        self.ROOT_FOLDER = "data"
+    def __init__(self, **kwargs):
+        self.ROOT_FOLDER = "data" if kwargs.get("root") is None else kwargs.get("root")
         self.columns = ["sentence", "target"]
 
         self.folder_format = lambda folder_id: f"wiki_sentences_{str(folder_id).rjust(5, '0')}"
@@ -39,13 +39,9 @@ class FileReader:
 
                 for i in range(lines_to_count):
                     while True:
-                        index = random.randint(0, lines_in_file)
+                        index = random.randint(0, lines_in_file - 1)
 
-                        print(self.files.get(file_path))
-
-                        if index in self.files.get(file_path):
-                            index = random.randint(0, lines_in_file)
-                        else:
+                        if index not in self.files.get(file_path):
                             break
 
                     self.files[file_path].append(index)
@@ -53,8 +49,3 @@ class FileReader:
 
         random.shuffle(lines)
         return lines
-
-
-if __name__ == "__main__":
-    reader = FileReader()
-    list_1 = reader.read_random_lines()
