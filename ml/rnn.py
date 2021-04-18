@@ -18,10 +18,11 @@ class WordPredictor(Sequential):
     def __init__(self, num_of_words, **kwargs):
         super(WordPredictor, self).__init__()
 
-        self.NUMBER_OF_WORDS = num_of_words
-        self.VOCABULARY_SIZE = 50000
-
         self.tokenizer = Tokenizer()
+        self.reader = FileReader()
+
+        self.NUMBER_OF_WORDS = num_of_words
+        self.VOCABULARY_SIZE = self.reader.vocabulary(self.tokenizer)
 
         # NETWORK
         self.add(Embedding(input_dim=self.VOCABULARY_SIZE, output_dim=50, input_length=self.NUMBER_OF_WORDS))
@@ -33,9 +34,10 @@ class WordPredictor(Sequential):
 
         self.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    def train_on_wiki(self):
-        self.fit(create_pre_process_generator(256, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
-                 steps_per_epoch=256)
+    def train_on_wiki(self, epochs=200, steps_per_epoch=15):
+        self.fit(create_pre_process_generator(epochs * steps_per_epoch, self.tokenizer, self.VOCABULARY_SIZE, 2000),
+                 epochs=epochs,
+                 steps_per_epoch=steps_per_epoch)
 
 
 def create_pre_process_generator(num_of_sets, tokenizer, vocab_size, line_count=2000):
@@ -47,7 +49,6 @@ def create_pre_process_generator(num_of_sets, tokenizer, vocab_size, line_count=
         sequence = np.array([token_list for token_list in tokenizer.texts_to_sequences([line for line in wiki_set]) if
                              len(token_list) == 20])
 
-        # x, y = sequence[:, :-1], sequence[:, -1]
         x, y = np.asarray([line[:-1] for line in sequence], dtype=np.int32), [line[-1] for line in sequence]
         y = to_categorical(y, num_classes=vocab_size)
 
@@ -107,8 +108,8 @@ def generate_sets(set_length=200, max_rows=10000, max_folders=1000):
 
 if __name__ == "__main__":
     # # Run RNN
-    # rnn = WordPredictor(20)
-    # rnn.train_on_wiki()
+    rnn = WordPredictor(20)
+    rnn.train_on_wiki()
 
     # Generate new sets
-    generate_sets()
+    # generate_sets(2000)

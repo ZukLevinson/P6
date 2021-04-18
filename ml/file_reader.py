@@ -49,3 +49,42 @@ class FileReader:
 
         random.shuffle(lines)
         return lines
+
+    # def get_random_lines(self, lines_count=2000):
+    #     lines = []
+    #
+    #     lines_added = 0
+    #
+    #     for file_path in self.files:
+    #         with io.open(file_path, newline='', encoding="utf-8") as file:
+    #             if lines_added == lines_count:
+    #                 return lines
+    #
+    #             csv_reader = csv.reader(file)
+    #
+    #             file_lines = list(csv_reader)
+    #             file_length = len(file_lines)
+    #
+    #             min_index = self.files.get(file_path)
+    #
+    #             if min_index > file_length:
+    #                 continue
+    #
+    #             max_index = min(file_length - 1, lines_count)
+    #
+    #             lines += file_lines[min_index:max_index]
+    #             lines_added += max_index - min_index
+    #
+    #             self.files[file_path] = max_index + 1
+    #
+    #     return lines
+
+    def vocabulary(self, tokenizer):
+        for file_path in self.files:
+            with io.open(file_path, newline='', encoding="utf-8") as file:
+                csv_reader = csv.reader(file)
+                file_lines = [" ".join(line) for line in list(csv_reader)]
+
+                tokenizer.fit_on_texts([line.split() for line in file_lines])
+
+        return len(tokenizer.word_index) + 1

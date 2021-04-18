@@ -2,7 +2,8 @@ import random
 import string
 import wikipedia
 import re
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, HTTPError
+from time import sleep
 
 
 def get_random_wiki_pages(number_of_pages, minimum_words_count):
@@ -27,6 +28,11 @@ def get_page_contents(title):
         return get_page_contents(random.choice(e.options))
     except (wikipedia.PageError, ConnectionError, RecursionError):
         return get_page_contents(wikipedia.random())
+    except HTTPError:
+        sleep(2)
+        return get_page_contents(wikipedia.random())
+    finally:
+        print(f"Added page named '{title}'")
 
 
 class WikiReader:
