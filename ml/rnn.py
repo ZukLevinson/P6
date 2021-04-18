@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-from reader import WikiReader
-from writer import CSVWriter
+from wiki_reader import WikiReader
+from csv_writer import CSVWriter
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Embedding
@@ -30,29 +30,20 @@ class WordPredictor(Sequential):
         self.add(Dropout(0.2))
         self.add(Dense(self.VOCABULARY_SIZE, activation='softmax'))
 
-    # def train_on_wiki(self, min_words_in_set=100):
-    #     wiki_reader = WikiReader(min_words_in_set)
-    #     wiki_set_generator = wiki_reader.get_and_reformat_pages
-    #
+    # def train_on_wiki(self):
     #     self.fit(create_pre_process_generator(wiki_set_generator, self.tokenizer, self.VOCABULARY_SIZE), epochs=100,
     #              steps_per_epoch=256)
 
 
-def create_pre_process_generator(generator, tokenizer, vocab_size):
-    for set in generator:
-        tokenizer.fit_on_texts([set])
-        sequence = np.array(tokenizer.texts_to_sequences([set]))
+def create_pre_process_generator(wiki_sets, tokenizer, vocab_size):
+    for wiki_set in wiki_sets:
+        tokenizer.fit_on_texts([wiki_set])
+        sequence = np.array(tokenizer.texts_to_sequences([wiki_set]))
 
         x, y = sequence[:, :-1], sequence[:, -1]
         y = to_categorical(y, vocab_size)
 
         yield x, y
-
-
-def pre_process_lines(lines):
-    tokenizer = Tokenizer()
-    tokenizer.fit_on_texts(lines)
-    return np.array(tokenizer.texts_to_sequences(lines)), tokenizer
 
 
 def predict_words(tf_model, tokenizer, text_seq_length, seed_text, n_words):
@@ -96,7 +87,7 @@ def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
 
     for page_tokens in reader.get_and_reformat_pages(set_length):
         if writer.count_rows(file_name) > max_rows:
-            if writer.count_csvs_in_folder(folder_name) > max_folders:
+            if writer.count_csv_in_folder(folder_name) > max_folders:
                 folder_name = writer.create_folder()
 
             csv_name = writer.create_csv_file(folder_name)
@@ -107,4 +98,4 @@ def generate_sets(set_length=20, max_rows=10000, max_folders=1000):
 
 
 if __name__ == "__main__":
-    generate_sets(200)
+    generate_sets(300)
